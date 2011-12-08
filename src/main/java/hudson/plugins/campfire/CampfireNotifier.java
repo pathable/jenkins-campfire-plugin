@@ -12,6 +12,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.regex.*;
 import org.xml.sax.SAXException;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.XPathExpressionException;
@@ -41,7 +42,7 @@ public class CampfireNotifier extends Notifier {
     public BuildStepMonitor getRequiredMonitorService() {
         return BuildStepMonitor.BUILD;
     }
-
+	
     private void publish(AbstractBuild<?, ?> build) throws IOException {
         checkCampfireConnection();
 		String message = build.getProject().getName() + " build " + build.getDisplayName() + ": " + build.getResult().toString();
@@ -50,7 +51,13 @@ public class CampfireNotifier extends Notifier {
             message = message + " (" + hudsonUrl + build.getUrl() + ")";
         }
         room.speak(message);
-		
+		room.paste(summarizeBuildLog(build));
+	}
+	
+	// TODO: make these configurable
+	private String[] linesToCapture={"^Commencing build","^\\+ rake spec","^Finished in", "^[0-9][0-9]* examples", "^\\+ script\\/js_specs", "^ran ", "^Finished: "};
+
+	private String summarizeBuildLog(AbstractBuild<?, ?> build){
 		final File logFile = build.getLogFile();
 		final StringBuffer summary = new StringBuffer();
 		try {
@@ -58,16 +65,31 @@ public class CampfireNotifier extends Notifier {
 			boolean started = false;
 			String str;
 			while ((str = in.readLine()) != null) {
-				if (str.startsWith("Finished in"))
-					started = true;
-				if (started || str.startsWith("Commencing build")) 	
-					summary.append(str + "\n");
+				for (String s : linesToCapture) {
+					Pattern p = Pattern.compile(s);
+					Matcher m = p.matcher(str);
+					if (m.find()){
+						summary.append(stripColorization(str) + "\n");
+						break;
+					}
+				}
 			}
 			in.close();
 		} catch (IOException e) {
+			// oh yeah, well what do I do about it
 		}
-		room.paste(summary.toString());
+		return summary.toString();
 	}
+	
+	private String stripColorization(String in){
+		Pattern p = Pattern.compile("\\[[0-9]*m");
+		Matcher m = p.matcher(in);
+		return m.replaceAll("");
+		
+	}
+		
+		
+	
 
     private void checkCampfireConnection() throws IOException {
         if (campfire == null) {
