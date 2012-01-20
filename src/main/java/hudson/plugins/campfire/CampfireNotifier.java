@@ -57,7 +57,18 @@ public class CampfireNotifier extends Notifier {
 
 	private String summarizeBuildLog(AbstractBuild<?, ?> build){
 		// TODO: make these configurable
-		final String[] linesToCapture={"^Commencing build","^\\+ rake spec","^Finished in", "^[0-9][0-9]* examples", "^\\+ script\\/js_specs", "^ran ", "^Finished\\: "};
+		final String[] linesToCapture={
+			"^Commencing build",
+			"^\\+ rake spec",
+			"^Finished in", 
+			"^[0-9][0-9]* examples", 
+			"^\\+ script\\/js_specs", 
+			"^ran ", 
+			"^Finished\\: ",
+			"^\\+ rake spec",
+			"[0-9][0-9]* scenarios",
+			"[0-9][0-9]* steps"
+		};
 		final File logFile = build.getLogFile();
 		final StringBuffer summary = new StringBuffer();
 		try {
