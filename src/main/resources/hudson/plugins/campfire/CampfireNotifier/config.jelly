@@ -15,4 +15,10 @@
     <!--<f:entry title="SSL" description="Use SSL?">-->
       <!--<f:textbox name="ssl" value="${descriptor.getSsl()}" />-->
     <!--</f:entry>-->
+    <f:entry title="Paste Summary" description="Include summary paste message?">
+      <f:checkbox name="summaryPasteEnabled" checked="${descriptor.isSummaryPasteEnabled()}" />
+    </f:entry>
+    <f:entry title="Summary Regular Expressions" description="Summary paste regular expressions, one per line">
+      <f:textarea name="summaryPasteRegexs" value="${descriptor.getSummaryPasteRegexs()}" />
+    </f:entry>
 </j:jelly>

@@ -17,11 +17,20 @@ import org.xml.sax.SAXException;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.XPathExpressionException;
 
+
+import net.sf.json.JSONObject;
+
+import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.StaplerRequest;
+
+
 public class CampfireNotifier extends Notifier {
 
     private transient Campfire campfire;
     private Room room;
     private String hudsonUrl;
+    private boolean summaryPasteEnabled;
+    private String summaryPasteRegexs;
 
     /**
      * Descriptor should be singleton. (Won't this just set a class constant to an instance (but not the only possible instance) of DescriptorImpl?)
@@ -29,14 +38,23 @@ public class CampfireNotifier extends Notifier {
     @Extension
     public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
 
-    public CampfireNotifier() throws IOException {
+//    public CampfireNotifier() throws IOException {
+//        super();
+//        initialize();
+//    }
+    
+    @DataBoundConstructor
+    public CampfireNotifier(String subdomain, String token, String room, String hudsonUrl, boolean ssl, boolean summaryPasteEnabled, String summaryPasteRegexs) throws IOException {
         super();
-        initialize();
+        initialize(subdomain, token, room, hudsonUrl, ssl, summaryPasteEnabled, summaryPasteRegexs);
     }
 
-    public CampfireNotifier(String subdomain, String token, String room, String hudsonUrl, boolean ssl) throws IOException {
-        super();
-        initialize(subdomain, token, room, hudsonUrl, ssl);
+    public boolean isSummaryPasteEnabled() {
+      return summaryPasteEnabled;
+    }
+
+    public String getSummaryPasteRegexs() {
+      return summaryPasteRegexs;
     }
 
     public BuildStepMonitor getRequiredMonitorService() {
@@ -45,30 +63,33 @@ public class CampfireNotifier extends Notifier {
 	
     private void publish(AbstractBuild<?, ?> build) throws IOException {
         checkCampfireConnection();
-		String message = build.getProject().getName() + " build " + build.getDisplayName() + ": " + build.getResult().toString();
+        String message = build.getProject().getName() + " build " + build.getDisplayName() + ": " + build.getResult().toString();
         // possible TODO: get most recent committer from log or even just show all using build.getCulprits()
         if (hudsonUrl != null && hudsonUrl.length() > 1) {
             message = message + " (" + hudsonUrl + build.getUrl() + ")";
         }
         room.speak(message);
-		room.paste(summarizeBuildLog(build));
-	}
+        if ( summaryPasteEnabled ) {
+          room.paste(summarizeBuildLog(build));
+        }
+    }
 	
 
-	private String summarizeBuildLog(AbstractBuild<?, ?> build){
-		// TODO: make these configurable
-		final String[] linesToCapture={
-			"^Commencing build",
-			"^\\+ rake spec",
-			"^Finished in", 
-			"^[0-9][0-9]* examples", 
-			"^\\+ script\\/js_specs", 
-			"^ran ", 
-			"^Finished\\: ",
-			"^\\+ rake spec",
-			"[0-9][0-9]* scenarios",
-			"[0-9][0-9]* steps"
-		};
+    private String summarizeBuildLog(AbstractBuild<?, ?> build){
+      // TODO: make these configurable
+      final String[] linesToCapture= summaryPasteRegexs.split("[\\r?\\n]+");
+//  		final String[] linesToCapture={
+//  			"^Commencing build",
+//  			"^\\+ rake spec",
+//  			"^Finished in", 
+//  			"^[0-9][0-9]* examples", 
+//  			"^\\+ script\\/js_specs", 
+//  			"^ran ", 
+//  			"^Finished\\: ",
+//  			"^\\+ rake cucumber",
+//  			"[0-9][0-9]* scenarios",
+//  			"[0-9][0-9]* steps"
+//  		};
 		final File logFile = build.getLogFile();
 		final StringBuffer summary = new StringBuffer();
 		try {
@@ -109,10 +130,10 @@ public class CampfireNotifier extends Notifier {
     }
 
     private void initialize() throws IOException {
-        initialize(DESCRIPTOR.getSubdomain(), DESCRIPTOR.getToken(), DESCRIPTOR.getRoom(), DESCRIPTOR.getHudsonUrl(), DESCRIPTOR.getSsl());
+        initialize(DESCRIPTOR.getSubdomain(), DESCRIPTOR.getToken(), DESCRIPTOR.getRoom(), DESCRIPTOR.getHudsonUrl(), DESCRIPTOR.getSsl(), summaryPasteEnabled, summaryPasteRegexs);
     }
 
-    private void initialize(String subdomain, String token, String room, String hudsonUrl, boolean ssl) throws IOException {
+    private void initialize(String subdomain, String token, String room, String hudsonUrl, boolean ssl, boolean summaryPasteEnabled, String summaryPasteRegexs) throws IOException {
         campfire = new Campfire(subdomain, token, ssl);
         try {
             this.room = campfire.findOrCreateRoomByName(room);
@@ -126,6 +147,8 @@ public class CampfireNotifier extends Notifier {
             throw new IOException("Cannot join room: " + e.getMessage());
         }
         this.hudsonUrl = hudsonUrl;
+        this.summaryPasteEnabled = summaryPasteEnabled;
+        this.summaryPasteRegexs = summaryPasteRegexs;
     }
 
     @Override

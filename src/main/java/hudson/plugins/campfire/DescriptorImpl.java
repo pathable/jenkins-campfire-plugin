@@ -20,7 +20,9 @@ public class DescriptorImpl extends BuildStepDescriptor<Publisher> {
     private String room;
     private String hudsonUrl;
     private boolean ssl;
-
+    private boolean summaryPasteEnabled;
+    private String summaryPasteRegexs;
+    
     public DescriptorImpl() {
         super(CampfireNotifier.class);
         load();
@@ -50,6 +52,13 @@ public class DescriptorImpl extends BuildStepDescriptor<Publisher> {
         return ssl;
     }
 
+    public boolean isSummaryPasteEnabled() {
+      return summaryPasteEnabled;
+    }
+
+    public String getSummaryPasteRegexs() {
+      return summaryPasteRegexs;
+    }
     public boolean isApplicable(Class<? extends AbstractProject> aClass) {
         return true;
     }
@@ -59,8 +68,10 @@ public class DescriptorImpl extends BuildStepDescriptor<Publisher> {
      */
     @Override
     public Publisher newInstance(StaplerRequest req, JSONObject formData) throws FormException {
+        summaryPasteEnabled = req.getParameter("summaryPasteEnabled") != null;
+        summaryPasteRegexs = req.getParameter("summaryPasteRegexs");
         try {
-            return new CampfireNotifier(subdomain, token, room, hudsonUrl, ssl);
+            return new CampfireNotifier(subdomain, token, room, hudsonUrl, ssl, summaryPasteEnabled, summaryPasteRegexs);
         } catch (Exception e) {
             throw new FormException("Failed to initialize campfire notifier - check your global campfire notifier configuration settings", e, "");
         }
@@ -76,6 +87,8 @@ public class DescriptorImpl extends BuildStepDescriptor<Publisher> {
             hudsonUrl = hudsonUrl + "/";
         }
         ssl = req.getParameter("campfireSsl") != null;
+        summaryPasteEnabled = req.getParameter("summaryPasteEnabled") != null;
+        summaryPasteRegexs = req.getParameter("summaryPasteRegexs");
         save();
         return super.configure(req, json);
     }
