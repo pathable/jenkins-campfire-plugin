@@ -39,7 +39,7 @@ public class CampfireNotifier extends Notifier {
     this.summaryPasteRegexs = summaryPasteRegexs;
     initialize();
   }
-
+  
   private void initialize() throws IOException {
     DescriptorImpl descriptor = ((DescriptorImpl) getDescriptor());
     campfire = new Campfire(descriptor.getSubdomain(), descriptor.getToken(), descriptor.getSsl());
@@ -53,6 +53,9 @@ public class CampfireNotifier extends Notifier {
       throw new IOException("Cannot join room: " + e.getMessage());
     } catch (SAXException e) {
       throw new IOException("Cannot join room: " + e.getMessage());
+    }
+    if( this.room == null ) {
+      throw new IOException("Cannot find room (" + descriptor.getRoom() + "). Note: room names are case sensitive");
     }
   }
 
@@ -76,6 +79,8 @@ public class CampfireNotifier extends Notifier {
   }
 
   private void publish(AbstractBuild<?, ?> build) throws IOException {
+    initialize();
+    
     String message = build.getProject().getName() + " build " + build.getDisplayName() + ": " + build.getResult().toString();
     String hudsonUrl =  ((DescriptorImpl) getDescriptor()).getHudsonUrl();
     if (hudsonUrl != null && hudsonUrl.length() > 1) {

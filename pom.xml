@@ -15,19 +15,22 @@
   <description>A Build status publisher that notifies channels on a Campfire server</description>
   <url>http://wiki.hudson-ci.org/display/HUDSON/Campfire+Plugin</url>
   <licenses>
-  	<license><name>MIT license</name><comments>All source code is under the MIT license.</comments></license>
+   <license><name>MIT license</name><comments>All source code is under the MIT license.</comments></license>
   </licenses>
   <dependencies>
     <dependency>
+      <groupId>org.jvnet.hudson.main</groupId>
+      <artifactId>maven-plugin</artifactId>
+    </dependency>
+    <dependency>
       <groupId>commons-httpclient</groupId>
       <artifactId>commons-httpclient</artifactId>
-      <version>3.1</version>
+      <version>3.1-rc1</version>
     </dependency>
       <dependency>
         <groupId>org.jvnet.hudson</groupId>
         <artifactId>htmlunit</artifactId>
         <version>2.2-hudson-10</version>
-        <scope>test</scope>
       </dependency>
   </dependencies>
   <developers>
@@ -48,10 +51,6 @@
     <developer>
       <id>jkrall</id>
       <name>Joshua Krall</name>
-    </developer>  
-    <developer>
-      <id>littlebee</id>
-      <name>Bee Wilkerson</name>
-    </developer>  
+    </developer>
   </developers>
 </project>
