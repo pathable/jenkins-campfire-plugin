@@ -1,5 +1,7 @@
 package hudson.plugins.campfire;
 
+import hudson.Extension;
+import hudson.Functions;
 import hudson.tasks.Publisher;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.model.AbstractProject;
@@ -13,99 +15,77 @@ import net.sf.json.JSONObject;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.XPathExpressionException;
 
+@Extension
 public class DescriptorImpl extends BuildStepDescriptor<Publisher> {
-    private boolean enabled = false;
-    private String subdomain;
-    private String token;
-    private String room;
-    private String hudsonUrl;
-    private boolean ssl;
-    private boolean summaryPasteEnabled;
-    private String summaryPasteRegexs;
-    
-    public DescriptorImpl() {
-        super(CampfireNotifier.class);
-        load();
-    }
 
-    public boolean isEnabled() {
-        return enabled;
-    }
+  public boolean enabled = false;
+  public String subdomain;
+  public String token;
+  public String room;
+  public String hudsonUrl;
+  public boolean ssl;
 
-    public String getSubdomain() {
-        return subdomain;
-    }
+  public DescriptorImpl() {
+    super(CampfireNotifier.class);
+    load();
+  }
 
-    public String getToken() {
-        return token;
-    }
+  public boolean isEnabled() {
+    return enabled;
+  }
 
-    public String getRoom() {
-        return room;
-    }
+  public String getSubdomain() {
+    return subdomain;
+  }
 
-    public String getHudsonUrl() {
-        return hudsonUrl;
-    }
+  public String getToken() {
+    return token;
+  }
 
-    public boolean getSsl() {
-        return ssl;
-    }
+  public String getRoom() {
+    return room;
+  }
 
-    public boolean isSummaryPasteEnabled() {
-      return summaryPasteEnabled;
-    }
+  public String getHudsonUrl() {
+    return hudsonUrl;
+  }
 
-    public String getSummaryPasteRegexs() {
-      return summaryPasteRegexs;
-    }
-    public boolean isApplicable(Class<? extends AbstractProject> aClass) {
-        return true;
-    }
+  public boolean getSsl() {
+    return ssl;
+  }
 
-    /**
-     * @see hudson.model.Descriptor#newInstance(org.kohsuke.stapler.StaplerRequest)
-     */
-    @Override
-    public Publisher newInstance(StaplerRequest req, JSONObject formData) throws FormException {
-        summaryPasteEnabled = req.getParameter("summaryPasteEnabled") != null;
-        summaryPasteRegexs = req.getParameter("summaryPasteRegexs");
-        try {
-            return new CampfireNotifier(subdomain, token, room, hudsonUrl, ssl, summaryPasteEnabled, summaryPasteRegexs);
-        } catch (Exception e) {
-            throw new FormException("Failed to initialize campfire notifier - check your global campfire notifier configuration settings", e, "");
-        }
-    }
+  @Override
+  public boolean isApplicable(Class<? extends AbstractProject> aClass) {
+    return true;
+  }
 
-    @Override
-    public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
-        subdomain = req.getParameter("campfireSubdomain");
-        token = req.getParameter("campfireToken");
-        room = req.getParameter("campfireRoom");
-        hudsonUrl = req.getParameter("campfireHudsonUrl");
-        if ( hudsonUrl != null && !hudsonUrl.endsWith("/") ) {
-            hudsonUrl = hudsonUrl + "/";
-        }
-        ssl = req.getParameter("campfireSsl") != null;
-        summaryPasteEnabled = req.getParameter("summaryPasteEnabled") != null;
-        summaryPasteRegexs = req.getParameter("summaryPasteRegexs");
-        save();
-        return super.configure(req, json);
-    }
+  @Override
+  public Publisher newInstance(StaplerRequest req, JSONObject formData)
+          throws FormException {
 
-    /**
-     * @see hudson.model.Descriptor#getDisplayName()
-     */
-    @Override
-    public String getDisplayName() {
-        return "Campfire Notification";
-    }
+    return super.newInstance(req, formData);
+  }
 
-    /**
-     * @see hudson.model.Descriptor#getHelpFile()
-     */
-    @Override
-    public String getHelpFile() {
-        return "/plugin/campfire/help.html";
-    }
+  @Override
+  public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
+    req.bindParameters(this, "campfire.");
+    save();
+    return super.configure(req, json);
+  }
+
+  /**
+   * @see hudson.model.Descriptor#getDisplayName()
+   */
+  @Override
+  public String getDisplayName() {
+    return "Campfire Notification x2";
+  }
+
+  /**
+   * @see hudson.model.Descriptor#getHelpFile()
+   */
+  @Override
+  public String getHelpFile() {
+    return "/plugin/campfire/help.html";
+  }
 }

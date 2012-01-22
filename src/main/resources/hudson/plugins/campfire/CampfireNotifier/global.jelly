@@ -13,19 +13,19 @@
   -->
 <f:section title="Global Campfire Notifier Settings">
     <f:entry title="Subdomain" help="${rootURL}/plugin/campfire/help-globalConfig-subdomain.html">
-        <f:textbox name="campfireSubdomain" value="${descriptor.getSubdomain()}" />
+        <f:textbox name="campfire.subdomain" value="${descriptor.getSubdomain()}" />
     </f:entry>
     <f:entry title="API Token" help="${rootURL}/plugin/campfire/help-globalConfig-token.html">
-        <f:textbox name="campfireToken" value="${descriptor.getToken()}" />
+        <f:textbox name="campfire.token" value="${descriptor.getToken()}" />
     </f:entry>
     <f:entry title="Room" help="${rootURL}/plugin/campfire/help-globalConfig-room.html">
-        <f:textbox name="campfireRoom" value="${descriptor.getRoom()}" />
+        <f:textbox name="campfire.room" value="${descriptor.getRoom()}" />
     </f:entry>
     <f:entry title="Hudson Url" help="${rootURL}/plugin/campfire/help-globalConfig-hudsonUrl.html">
-        <f:textbox name="campfireHudsonUrl" value="${descriptor.getHudsonUrl()}" />
+        <f:textbox name="campfire.hudsonUrl" value="${descriptor.getHudsonUrl()}" />
     </f:entry>
     <f:entry title="SSL" help="${rootURL}/plugin/campfire/help-globalConfig-ssl.html">
-        <f:checkbox name="campfireSsl" checked="${descriptor.getSsl()}" />
+        <f:checkbox name="campfire.ssl" checked="${descriptor.getSsl()}" />
     </f:entry>
   </f:section>
 </j:jelly>
